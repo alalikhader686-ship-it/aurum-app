@@ -32,7 +32,10 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
+
+      - name: Check Java Version
+        run: java -version
 
       - name: Build APK
         run: |
