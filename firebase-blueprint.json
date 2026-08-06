@@ -1,0 +1,328 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile with roles and status",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["customer", "merchant", "admin"] },
+        "isVIP": { "type": "boolean" },
+        "points": { "type": "number" },
+        "lastDailySpin": { "type": "string", "format": "date-time" },
+        "lastDailyClaim": { "type": "string", "format": "date-time" },
+        "extraSpins": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "role"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Luxury product items",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "brand": { "type": "string" },
+        "price": { "type": "string" },
+        "image": { "type": "string" },
+        "images": { "type": "array", "items": { "type": "string" } },
+        "category": { "type": "string" },
+        "type": { "type": "string" },
+        "description": { "type": "string" },
+        "rating": { "type": "number" },
+        "reviewsCount": { "type": "number" },
+        "variants": { "type": "array", "items": { "type": "string" } },
+        "location": { "type": "string" },
+        "isFeatured": { "type": "boolean" },
+        "isVIPOnly": { "type": "boolean" },
+        "section": { "type": "string", "enum": ["home", "mall", "featured"] },
+        "shopId": { "type": "string" },
+        "shopName": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "ratings": { "type": "array", "items": { "$ref": "#/entities/Review" } },
+        "averageRating": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "price", "image", "category"]
+    },
+    "Review": {
+      "title": "Review",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "rating": { "type": "number" },
+        "comment": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Shop": {
+      "title": "Shop",
+      "description": "Merchant shops",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "image": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "active", "suspended"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "ownerId", "status"]
+    },
+    "Story": {
+      "title": "Story",
+      "description": "User and merchant stories/moments",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userImage": { "type": "string" },
+        "image": { "type": "string" },
+        "text": { "type": "string" },
+        "isOfficial": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "image", "createdAt"]
+    },
+    "RentInvoice": {
+      "title": "RentInvoice",
+      "description": "Shop rent payment proof",
+      "type": "object",
+      "properties": {
+        "merchantId": { "type": "string" },
+        "merchantEmail": { "type": "string" },
+        "shopId": { "type": "string" },
+        "shopName": { "type": "string" },
+        "amount": { "type": "string" },
+        "transactionId": { "type": "string" },
+        "method": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "verified", "rejected"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["merchantId", "amount", "status"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer orders with cancellation workflow support",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "items": { "type": "array" },
+        "total": { "type": "number" },
+        "city": { "type": "string" },
+        "area": { "type": "string" },
+        "phone": { "type": "string" },
+        "paymentMethod": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "processing", "shipped", "delivered", "cancelled"] },
+        "cancellationStatus": { "type": "string", "enum": ["none", "pending", "approved", "rejected"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "items", "total", "status"]
+    },
+    "MerchantRequest": {
+      "title": "MerchantRequest",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "shopName": { "type": "string" },
+        "plan": { "type": "string" },
+        "delivery": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Settings": {
+      "title": "Settings",
+      "type": "object",
+      "properties": {
+        "goldenHourEnd": { "type": "string", "format": "date-time" },
+        "marqueeText": { "type": "string" },
+        "marqueeType": { "type": "string", "enum": ["text", "products"] },
+        "marqueeProductIds": { "type": "array", "items": { "type": "string" } },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Notification": {
+      "title": "Notification",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "orderId": { "type": "string" },
+        "status": { "type": "string" },
+        "message": { "type": "string" },
+        "read": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "message", "read", "createdAt"]
+    },
+    "RedeemableProduct": {
+      "title": "RedeemableProduct",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "image": { "type": "string" },
+        "pointsCost": { "type": "number" },
+        "description": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "image", "pointsCost"]
+    },
+    "WheelPrize": {
+      "title": "WheelPrize",
+      "type": "object",
+      "properties": {
+        "label": { "type": "string" },
+        "value": { "type": "number" },
+        "color": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["label", "value", "color"]
+    },
+    "SheinLink": {
+      "title": "SheinLink",
+      "description": "User custom SHEIN link requests",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "userName": { "type": "string" },
+        "link": { "type": "string" },
+        "notes": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "reviewed", "ordered", "completed", "cancelled"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "link", "status", "createdAt"]
+    },
+    "CustomJewelryRequest": {
+      "title": "CustomJewelryRequest",
+      "description": "User requests for custom jewelry tailoring",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "phone": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "reviewed", "quoted", "rejected", "accepted", "completed"] },
+        "quotedPrice": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "phone", "description", "status", "createdAt"]
+    },
+    "ClothingDesignRequest": {
+      "title": "ClothingDesignRequest",
+      "description": "User requests for custom clothing design and tailoring",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "phone": { "type": "string" },
+        "idea": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "fabricType": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "reviewed", "quoted", "rejected", "accepted", "completed"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "phone", "idea", "status", "createdAt"]
+    },
+    "RentalRequest": {
+      "title": "RentalRequest",
+      "description": "User requests for renting a shop in the mall",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "userName": { "type": "string" },
+        "userPhone": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "contacted", "rejected", "approved"] },
+        "type": { "type": "string" },
+        "mall": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "userPhone", "status"]
+    },
+    "Banner": {
+      "title": "Banner",
+      "description": "Promotional banners for home screen",
+      "type": "object",
+      "properties": {
+        "image": { "type": "string" },
+        "title": { "type": "string" },
+        "subtitle": { "type": "string" },
+        "link": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["image", "title", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Products for sale"
+    },
+    "/shops/{shopId}": {
+      "schema": "Shop",
+      "description": "Merchant shops"
+    },
+    "/stories/{storyId}": {
+      "schema": "Story",
+      "description": "Main feed stories"
+    },
+    "/rent_invoices/{invoiceId}": {
+      "schema": "RentInvoice",
+      "description": "Merchant rent payments"
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Customer order history"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "Notification",
+      "description": "User notifications"
+    },
+    "/merchant_requests/{requestId}": {
+      "schema": "MerchantRequest",
+      "description": "Requests to become a merchant"
+    },
+    "/settings/{settingId}": {
+      "schema": "Settings",
+      "description": "Global app settings"
+    },
+    "/redeemable_products/{productId}": {
+      "schema": "RedeemableProduct",
+      "description": "Products redeemable with points"
+    },
+    "/wheel_prizes/{prizeId}": {
+      "schema": "WheelPrize",
+      "description": "Prizes for the spin wheel"
+    },
+    "/shein_links/{linkId}": {
+      "schema": "SheinLink",
+      "description": "Inquiries for international SHEIN products"
+    },
+    "/custom_jewelry_requests/{requestId}": {
+      "schema": "CustomJewelryRequest",
+      "description": "Custom jewelry design requests"
+    },
+    "/clothing_design_requests/{requestId}": {
+      "schema": "ClothingDesignRequest",
+      "description": "Custom clothing design requests"
+    },
+    "/rental_requests/{requestId}": {
+      "schema": "RentalRequest",
+      "description": "Shop rental requests in Aurum Mall"
+    },
+    "/banners/{bannerId}": {
+      "schema": "Banner",
+      "description": "Featured banners for home screen"
+    }
+  }
+}

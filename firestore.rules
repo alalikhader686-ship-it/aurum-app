@@ -1,0 +1,182 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // --- Phase 0: Global Safety Net (MANDATORY AT TOP) ---
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Phase 3: Global Helpers ---
+    function isSignedIn() { return request.auth != null; }
+    function isVerified() { return isSignedIn() && (request.auth.token.email_verified == true || request.auth.token.firebase.sign_in_provider == 'google.com'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    
+    function isAdmin() { 
+      return isSignedIn() && (
+        request.auth.token.email == 'aurumapp7@gmail.com' ||
+        request.auth.token.email == 'aurumapp7@googlemail.com' ||
+        request.auth.token.email == 'alalisalam82@gmail.com' ||
+        request.auth.token.email == 'alalisalam82@googlemail.com' ||
+        request.auth.token.email == 'alalikhader686@gmail.com' ||
+        request.auth.token.email == 'alalikhader686@googlemail.com' ||
+        request.auth.token.email == 'hamadasy604@gmail.com' ||
+        request.auth.token.email == 'hamadasy604@googlemail.com' ||
+        request.auth.token.email == 'alaa-khader@hotmail.com' ||
+        request.auth.token.email == 'alalikhader686@hotmail.com' ||
+        request.auth.token.email == 'alalikhader686@outlook.com' ||
+        request.auth.token.email == 'alalikhader686@live.com'
+      ); 
+    }
+
+    // --- Phase 4: Validation Helpers ---
+    function isValidUser(data) {
+      return (('email' in data) ? (data.email is string && data.email.size() <= 120) : true) &&
+             (('role' in data) ? (data.role in ['customer', 'merchant', 'admin']) : true);
+    }
+
+    function isValidProduct(data) {
+      return data.name is string && data.name.size() <= 200 &&
+             data.price is string && data.price.size() <= 50 &&
+             data.category is string &&
+             (('updatedAt' in data) ? (data.updatedAt is string) : true);
+    }
+
+    function isValidOrder(data) {
+      return data.userId == request.auth.uid &&
+             data.total is number &&
+             data.items is list &&
+             (('createdAt' in data) ? (data.createdAt is string) : true);
+    }
+
+    function isValidRedeemableProduct(data) {
+      return data.name is string && data.name.size() <= 200 &&
+             data.pointsCost is number &&
+             data.image is string;
+    }
+
+    function isValidWheelPrize(data) {
+      return data.label is string && data.label.size() <= 100 &&
+             data.value is number &&
+             data.color is string;
+    }
+
+    // --- Phase 4: Collection Rules ---
+
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if isOwner(userId) || isSignedIn();
+      allow update: if (isOwner(userId) || isAdmin()) && (
+        (isAdmin() && incoming().diff(existing()).affectedKeys().hasAny(['points', 'role', 'isVIP', 'extraSpins'])) ||
+        (isOwner(userId) && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'phone', 'city', 'area', 'address', 'coordinates', 'lastDailySpin', 'lastDailyClaim', 'persistedCart', 'persistedFavorites', 'isGuest', 'email', 'points', 'extraSpins']))
+      );
+    }
+
+    match /products/{productId} {
+      allow get, list: if true;
+      allow create: if (isAdmin() || (isVerified() && incoming().ownerId == request.auth.uid)) && isValidProduct(incoming());
+      allow update: if isAdmin() || (isVerified() && existing().ownerId == request.auth.uid && isValidProduct(incoming())) ||
+        // User updating ratings
+        (isSignedIn() && incoming().diff(existing()).affectedKeys().hasAny(['ratings', 'averageRating', 'rating']));
+      allow delete: if isAdmin() || (isVerified() && existing().ownerId == request.auth.uid);
+    }
+
+    match /orders/{orderId} {
+      allow list, get: if isSignedIn() && (
+        resource.data.userId == request.auth.uid || 
+        isAdmin() || 
+        (resource.data.merchantIds.hasAny([request.auth.uid]))
+      );
+      allow create: if isSignedIn() && isValidOrder(incoming());
+      allow delete: if isAdmin();
+      allow update: if isSignedIn() && (
+        isAdmin() || 
+        (resource.data.merchantIds.hasAny([request.auth.uid]) && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'cancellationStatus'])) ||
+        (isOwner(resource.data.userId) && incoming().diff(existing()).affectedKeys().hasOnly(['cancellationStatus']) && (incoming().cancellationStatus in ['pending', 'none']))
+      );
+    }
+
+    match /notifications/{notifId} {
+      allow read, delete: if isSignedIn() && (isOwner(resource.data.userId) || isAdmin());
+      allow create: if isSignedIn();
+      allow update: if isOwner(resource.data.userId) && incoming().diff(existing()).affectedKeys().hasOnly(['read']);
+    }
+
+    match /settings/{settingId} {
+      allow get, list: if true;
+      allow write: if isAdmin();
+    }
+
+    match /shops/{shopId} {
+      allow get, list: if true;
+      allow create: if isSignedIn();
+      allow update: if isAdmin() || (isSignedIn() && (resource.data.ownerId == request.auth.uid || resource.data.ownerEmail == request.auth.token.email));
+      allow delete: if isAdmin();
+    }
+
+    match /merchant_requests/{requestId} {
+      allow create: if isVerified() && incoming().userId == request.auth.uid;
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow write: if isAdmin();
+    }
+
+    match /redeemable_products/{id} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidRedeemableProduct(incoming());
+    }
+    
+    match /wheel_prizes/{id} {
+      allow read: if true;
+      allow write: if isAdmin() && isValidWheelPrize(incoming());
+    }
+    
+    match /rent_invoices/{id} {
+      allow create: if isSignedIn() && incoming().merchantId == request.auth.uid;
+      allow get, list: if isAdmin() || (isSignedIn() && resource.data.merchantId == request.auth.uid);
+      allow delete: if isAdmin();
+      allow update: if isAdmin();
+    }
+    
+    match /stories/{storyId} {
+      allow get, list: if true;
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+      allow delete: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+    }
+
+    match /shein_links/{linkId} {
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid && incoming().status == 'pending';
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
+
+    match /custom_jewelry_requests/{requestId} {
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
+
+    match /clothing_design_requests/{requestId} {
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
+
+    match /rental_requests/{requestId} {
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow update, delete: if isAdmin();
+    }
+    
+    match /banners/{bannerId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /test/connection {
+      allow read: if true;
+    }
+  }
+}
