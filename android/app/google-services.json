@@ -22,14 +22,6 @@
           }
         },
         {
-          "client_id": "101782449543-j5gbh02o2vv03rlfjqd9jafdjqffi85h.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.aurum.app",
-            "certificate_hash": "c392555b4b2613d3d258b1037d6ebf4e21a5924f"
-          }
-        },
-        {
           "client_id": "101782449543-dsdrh76sgt49ku3st8vhhpii5i77d71r.apps.googleusercontent.com",
           "client_type": 3
         }
