@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build Android Release
 
 on:
   workflow_dispatch:
@@ -16,9 +16,6 @@ jobs:
         with:
           node-version: 22
 
-      - name: Check Node Version
-        run: node -v
-
       - name: Install dependencies
         run: npm install
 
@@ -34,17 +31,21 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Check Java Version
-        run: java -version
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/aurum-release.keystore
 
-      - name: Build APK
+      - name: Build Release APK
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleRelease
+
+      - name: Sign APK
+        run: echo "APK built"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: AURUM-APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: AURUM-Release-APK
+          path: android/app/build/outputs/apk/release/app-release.apk
