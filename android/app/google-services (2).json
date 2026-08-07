@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "101782449543",
+    "project_id": "aurumapp-d4fa5",
+    "storage_bucket": "aurumapp-d4fa5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:101782449543:android:b12d2a0191675cb1af7722",
+        "android_client_info": {
+          "package_name": "com.aurum.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "101782449543-40no31upgt7s2t32qu3bmlihqv99sogl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.aurum.app",
+            "certificate_hash": "eb6cf1810f18bddf7a9f78e44f5ba106024ea87a"
+          }
+        },
+        {
+          "client_id": "101782449543-j5gbh02o2vv03rlfjqd9jafdjqffi85h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.aurum.app",
+            "certificate_hash": "c392555b4b2613d3d258b1037d6ebf4e21a5924f"
+          }
+        },
+        {
+          "client_id": "101782449543-dsdrh76sgt49ku3st8vhhpii5i77d71r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDk5BrtuvBQFlLZnsFJogfcGN1zDjdCVhU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "101782449543-dsdrh76sgt49ku3st8vhhpii5i77d71r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
