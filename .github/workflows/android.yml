@@ -41,12 +41,12 @@ jobs:
           chmod +x gradlew
           ./gradlew assembleRelease
 
-      - name: Sign config
+      - name: Find APK
         run: |
-          echo "Release APK created"
+          find android -name "*.apk"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: AURUM-Release-APK
-          path: android/app/build/outputs/apk/release/app-release.apk
+          path: "**/*.apk"
