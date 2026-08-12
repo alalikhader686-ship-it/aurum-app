@@ -14,7 +14,8 @@ import {
   Copy,
   Clock,
   Camera,
-  Upload
+  Upload,
+  Send
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
@@ -137,6 +138,19 @@ export default function CartScreen({ onBack, onNavigate }: CartScreenProps) {
   const [locLoading, setLocLoading] = useState(false);
   const [receiptImage, setReceiptImage] = useState<string | null>(null);
   const [transactionId, setTransactionId] = useState("");
+  const [telegramInput, setTelegramInput] = useState("");
+  const [customerBotUsername, setCustomerBotUsername] = useState("");
+
+  useEffect(() => {
+    getDoc(doc(db, 'settings', 'global')).then(snap => {
+      if (snap.exists()) {
+        const data = snap.data();
+        if (data.customerTelegramBotUsername) {
+          setCustomerBotUsername(data.customerTelegramBotUsername);
+        }
+      }
+    }).catch(console.warn);
+  }, []);
 
   // Custom SVG Icon to avoid external asset dependency issues
   const luxuryIcon = L.divIcon({
@@ -295,6 +309,13 @@ export default function CartScreen({ onBack, onNavigate }: CartScreenProps) {
       const shopIds = Array.from(new Set(cartItems.map((item: CartItem & { shopId?: string }) => item.shopId).filter((id?: string) => !!id))) as string[];
       const merchantIds = Array.from(new Set(cartItems.map((item: CartItem & { ownerId?: string }) => item.ownerId).filter((id?: string) => !!id))) as string[];
 
+      // Parse customer Telegram input
+      const cleanTg = telegramInput.trim();
+      const telegramUsername = cleanTg.startsWith('@') 
+        ? cleanTg 
+        : (cleanTg && isNaN(Number(cleanTg)) ? `@${cleanTg}` : null);
+      const telegramChatId = cleanTg && !isNaN(Number(cleanTg)) ? cleanTg : null;
+
       // Save order to Firestore
       const orderRef = await addDoc(collection(db, 'orders'), {
         userId: auth.currentUser?.uid,
@@ -307,6 +328,8 @@ export default function CartScreen({ onBack, onNavigate }: CartScreenProps) {
         city,
         area,
         phone,
+        telegramUsername: telegramUsername || (cleanTg ? cleanTg : null),
+        telegramChatId: telegramChatId || (cleanTg ? cleanTg : null),
         paymentMethod: method,
         paymentReceipt: receiptImage,
         transactionId: transactionId || null,
@@ -660,6 +683,35 @@ export default function CartScreen({ onBack, onNavigate }: CartScreenProps) {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
           />
+
+          <div className="p-4 bg-sky-950/30 border border-sky-500/20 rounded-2xl space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-sky-400 flex items-center gap-1.5">
+                <Send size={14} />
+                <span>إرسال الفاتورة عبر التليغرام تلقائياً:</span>
+              </label>
+              {customerBotUsername && (
+                <a 
+                  href={`https://t.me/${customerBotUsername.replace('@', '')}?start=order`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[11px] bg-sky-500 text-black font-black px-3 py-1 rounded-full hover:bg-sky-400 transition-all flex items-center gap-1 shadow-md shadow-sky-500/20"
+                >
+                  <span>تشغيل البوت (/start) 🤖</span>
+                </a>
+              )}
+            </div>
+            <input 
+              type="text" 
+              placeholder="معرّف التليغرام (@username) أو Chat ID" 
+              className="w-full bg-[#0a0a0a] border border-[#222] rounded-2xl p-4 focus:outline-none focus:border-sky-500 transition-all text-right text-xs text-white dir-rtl"
+              value={telegramInput}
+              onChange={(e) => setTelegramInput(e.target.value)}
+            />
+            <p className="text-[10px] text-gray-400 leading-relaxed text-right">
+              💡 أدخل اسم المستخدم الخاص بك بالتليغرام (مثال: <span className="text-sky-400 font-mono">@name</span>) واضغط على <b>&quot;تشغيل البوت&quot;</b> بالأن الأعلى حتى يتمكن البوت من إرسال إشعار الفاتورة والموافقة لك مباشرة فور تثبيت طلبك.
+            </p>
+          </div>
         </section>
 
         {/* Payment Methods */}

@@ -29,6 +29,7 @@ import {
 } from './store/cartSlice';
 
 import { seedDatabaseIfEmpty } from './services/seedService';
+import ApkDownloadBanner from './components/ApkDownloadBanner';
 
 // Fallback loader for lazy components
 const AdminLoader = () => (
@@ -874,6 +875,8 @@ export default function App() {
           isVIP={userData?.isVIP}
         />
       )}
+
+      {currentScreen !== 'splash' && <ApkDownloadBanner />}
 
       <Toast 
         message={toast.message} 

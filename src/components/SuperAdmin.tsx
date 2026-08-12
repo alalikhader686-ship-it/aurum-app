@@ -500,21 +500,21 @@ export default function SuperAdmin({ onBack }: SuperAdminProps) {
             const fullOrder = { id: orderId, ...orderData } as Order;
             const customerTgMsg = buildCustomerTelegramApprovalMessage(fullOrder);
             
-            // Priority 1: Customer Telegram Bot (specifically for sending customer invoices)
+            // Dedicated Customer Telegram Bot Token
             const custBotToken = settings?.customerTelegramBotToken || telegramSettings.customerTelegramBotToken;
-            const targetChatId = orderData.telegramChatId || orderData.telegramUsername || settings?.customerTelegramDefaultChatId || settings?.telegramAdminChatId || telegramSettings.telegramAdminChatId;
+            // Customer Telegram recipient ONLY (do not fall back to admin chat ID)
+            const customerRecipient = orderData.telegramChatId || orderData.telegramUsername || (orderData.phone && orderData.phone.startsWith('@') ? orderData.phone : null);
 
-            if (custBotToken && targetChatId) {
-              sendAutomatedTelegramServer(custBotToken, targetChatId, customerTgMsg).then(res => {
+            if (custBotToken && customerRecipient) {
+              sendAutomatedTelegramServer(custBotToken, customerRecipient, customerTgMsg).then(res => {
                 if (res.success) {
-                  console.log("AURUM TELEGRAM BOT 🤖: Customer invoice sent automatically via Customer Bot!");
+                  console.log(`AURUM TELEGRAM BOT 🤖: Customer invoice sent automatically to customer (${customerRecipient}) via Customer Bot!`);
                 } else {
                   console.warn("AURUM TELEGRAM BOT ⚠️ Customer Bot error:", res.error);
                 }
               }).catch(err => console.warn("Telegram Customer Bot automated dispatch warning:", err));
-            } else if (settings?.telegramBotToken && settings?.telegramAdminChatId) {
-              // Fallback to Admin Bot
-              sendTelegramBotMessage(settings.telegramBotToken, settings.telegramAdminChatId, customerTgMsg).catch(console.warn);
+            } else {
+              console.log("AURUM TELEGRAM BOT ℹ️: Customer Telegram Username/ID was not provided by customer on this order.");
             }
 
             // WhatsApp link fallback

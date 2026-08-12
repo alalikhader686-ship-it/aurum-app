@@ -14,6 +14,7 @@
     "@capacitor/android": "^8.5.0",
     "@capacitor/cli": "^8.5.0",
     "@capacitor/core": "^8.5.0",
+    "@capgo/capacitor-social-login": "^8.3.40",
     "@google/genai": "^1.50.1",
     "@google/generative-ai": "^0.24.1",
     "@reduxjs/toolkit": "^2.11.2",
@@ -42,7 +43,6 @@
     "node-domexception": "1.0.0"
   },
   "devDependencies": {
-    "@capacitor/assets": "^3.0.5",
     "@eslint/js": "^10.0.1",
     "@firebase/eslint-plugin-security-rules": "^0.0.1",
     "@types/express": "^4.17.21",

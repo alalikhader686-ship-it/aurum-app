@@ -23,7 +23,7 @@ import { cn } from '../lib/utils';
 import { deliveryService } from '../services/deliveryService';
 import { Product, Order, Shop, CartItem, MerchantRequest } from '../types';
 import { buildCustomerApprovalMessage, openWhatsApp } from '../services/whatsappService';
-import { sendTelegramBotMessage, buildCustomerTelegramApprovalMessage, sendAutomatedTelegramServer } from '../services/telegramService';
+import { buildCustomerTelegramApprovalMessage, sendAutomatedTelegramServer } from '../services/telegramService';
 
 interface MerchantDashboardProps {
   user: {
@@ -110,20 +110,17 @@ export default function MerchantDashboard({ user, onSwitchView }: MerchantDashbo
               if (snap.exists()) {
                 const setts = snap.data();
                 const custToken = setts.customerTelegramBotToken;
-                const targetChatId = order.telegramChatId || order.telegramUsername || setts.customerTelegramDefaultChatId || setts.telegramAdminChatId;
+                const customerRecipient = order.telegramChatId || order.telegramUsername || (order.phone && order.phone.startsWith('@') ? order.phone : null);
 
-                const tgMsg = buildCustomerTelegramApprovalMessage(order);
-
-                if (custToken && targetChatId) {
-                  sendAutomatedTelegramServer(custToken, targetChatId, tgMsg).then(res => {
+                if (custToken && customerRecipient) {
+                  const tgMsg = buildCustomerTelegramApprovalMessage(order);
+                  sendAutomatedTelegramServer(custToken, customerRecipient, tgMsg).then(res => {
                     if (res.success) {
-                      console.log("AURUM MERCHANT TELEGRAM BOT 🤖: Customer invoice sent automatically via Customer Bot!");
+                      console.log(`AURUM MERCHANT TELEGRAM BOT 🤖: Customer invoice sent automatically to (${customerRecipient}) via Customer Bot!`);
                     } else {
                       console.warn("AURUM MERCHANT TELEGRAM BOT ⚠️ Customer Bot error:", res.error);
                     }
                   }).catch(console.warn);
-                } else if (setts.telegramBotToken && setts.telegramAdminChatId) {
-                  sendTelegramBotMessage(setts.telegramBotToken, setts.telegramAdminChatId, tgMsg).catch(console.warn);
                 }
               }
             }).catch(console.warn);
